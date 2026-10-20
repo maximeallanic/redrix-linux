@@ -21,8 +21,8 @@
 set -euo pipefail
 
 # Pinned release fetched by the one-line install. scripts/release.sh fills both values after a release is published.
-RELEASE_VERSION=0.1.0
-RELEASE_SHA256='f24e9e50234bfff5e952bdaddc5849f2c0f10d10777ab8d9c96026be21fdb1ad'
+RELEASE_VERSION=0.1.1
+RELEASE_SHA256='e5bfbe17573fe9d0229b6f6009a6dcd50572994d4c38a1bc9bd8d25839c92392'
 RELEASE_URL="https://github.com/maximeallanic/redrix-linux/releases/download/v${RELEASE_VERSION}/redrix-linux-${RELEASE_VERSION}.tar.gz"
 
 # Runs when the script arrives through a pipe: download the pinned release, check it, hand over to its installer.

@@ -2,7 +2,7 @@
 # Shared helpers: output, prompts, privilege boundary, dry run, state. Sourced by install.sh, uninstall.sh, verify.sh
 # and the tests; never executed on its own.
 
-REDRIX_VERSION=0.1.0
+REDRIX_VERSION=0.1.1
 REDRIX_NAME=redrix-linux
 
 # Machine-parsed tool output must not depend on the desktop language.
