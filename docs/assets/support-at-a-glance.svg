@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="964" height="538" viewBox="0 0 964 538" role="img" aria-labelledby="t d">
+<title id="t">HP Elite Dragonfly Chromebook (redrix) under Linux: hardware support at a glance</title>
+<desc id="d">12 items work out of the box, 6 work with this kit or a documented setup step, 6 are partial, 2 do not work and 2 are untested. Source: docs/hardware-support.md.</desc>
+<rect width="964" height="538" rx="16" fill="#ffffff" stroke="#dadce0"/>
+<text x="20" y="38" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="20" font-weight="700" fill="#202124">HP Elite Dragonfly Chromebook (redrix) on Linux</text>
+<text x="20" y="60" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#5f6368">Hardware support at a glance. One machine tested: Debian testing, GNOME 51, kernel 7.2, MrChromebox UEFI 2609.1</text>
+<rect x="20" y="74" width="222" height="402" rx="12" fill="#e6f4ea"/>
+<text x="34" y="102" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#1e8e3e">Works out of the box (12)</text>
+<circle cx="39" cy="129" r="4" fill="#1e8e3e"/>
+<text x="51" y="133" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">CPU (i7-1265U)</text>
+<circle cx="39" cy="156" r="4" fill="#1e8e3e"/>
+<text x="51" y="160" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">GPU (Iris Xe)</text>
+<circle cx="39" cy="183" r="4" fill="#1e8e3e"/>
+<text x="51" y="187" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Touchscreen</text>
+<circle cx="39" cy="210" r="4" fill="#1e8e3e"/>
+<text x="51" y="214" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Keyboard</text>
+<circle cx="39" cy="237" r="4" fill="#1e8e3e"/>
+<text x="51" y="241" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Keyboard backlight</text>
+<circle cx="39" cy="264" r="4" fill="#1e8e3e"/>
+<text x="51" y="268" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Haptic touchpad</text>
+<text x="51" y="284" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">+ haptics: event vibrations</text>
+<circle cx="39" cy="304" r="4" fill="#1e8e3e"/>
+<text x="51" y="308" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">External display (USB-C)</text>
+<circle cx="39" cy="331" r="4" fill="#1e8e3e"/>
+<text x="51" y="335" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Wi-Fi (AX211)</text>
+<circle cx="39" cy="358" r="4" fill="#1e8e3e"/>
+<text x="51" y="362" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Bluetooth</text>
+<circle cx="39" cy="385" r="4" fill="#1e8e3e"/>
+<text x="51" y="389" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Tablet mode</text>
+<circle cx="39" cy="412" r="4" fill="#1e8e3e"/>
+<text x="51" y="416" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Ambient light sensor</text>
+<circle cx="39" cy="439" r="4" fill="#1e8e3e"/>
+<text x="51" y="443" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Battery</text>
+<text x="51" y="459" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">+ battery-guard if worn</text>
+<rect x="254" y="74" width="222" height="402" rx="12" fill="#e8f0fe"/>
+<text x="268" y="102" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#1a73e8">Works with kit or setup step (6)</text>
+<circle cx="273" cy="129" r="4" fill="#1a73e8"/>
+<text x="285" y="133" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Pen (USI)</text>
+<text x="285" y="149" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">pen</text>
+<circle cx="273" cy="169" r="4" fill="#1a73e8"/>
+<text x="285" y="173" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Lock + fullscreen keys</text>
+<text x="285" y="189" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">top-row</text>
+<circle cx="273" cy="209" r="4" fill="#1a73e8"/>
+<text x="285" y="213" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Speakers (4x MAX98390)</text>
+<text x="285" y="229" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">audio setup* + speakers</text>
+<circle cx="273" cy="249" r="4" fill="#1a73e8"/>
+<text x="285" y="253" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Headphone jack</text>
+<text x="285" y="269" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">audio setup* only</text>
+<circle cx="273" cy="289" r="4" fill="#1a73e8"/>
+<text x="285" y="293" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Fingerprint reader</text>
+<text x="285" y="309" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">fingerprint</text>
+<circle cx="273" cy="329" r="4" fill="#1a73e8"/>
+<text x="285" y="333" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">S3 deep suspend</text>
+<text x="285" y="349" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">suspend (MrChromebox)</text>
+<rect x="488" y="74" width="222" height="402" rx="12" fill="#fef7e0"/>
+<text x="502" y="102" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#b06000">Partial (6)</text>
+<circle cx="507" cy="129" r="4" fill="#b06000"/>
+<text x="519" y="133" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Internal display</text>
+<text x="519" y="149" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">no ~150 % scaling</text>
+<circle cx="507" cy="169" r="4" fill="#b06000"/>
+<text x="519" y="173" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Internal microphones</text>
+<text x="519" y="189" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">Mic1 only; + microphone</text>
+<circle cx="507" cy="209" r="4" fill="#b06000"/>
+<text x="519" y="213" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Camera (hi556)</text>
+<text x="519" y="229" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">+ camera; cool in warm light</text>
+<circle cx="507" cy="249" r="4" fill="#b06000"/>
+<text x="519" y="253" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">USB-C storage</text>
+<text x="519" y="269" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">not re-tested</text>
+<circle cx="507" cy="289" r="4" fill="#b06000"/>
+<text x="519" y="293" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">s2idle suspend</text>
+<text x="519" y="309" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">never reaches S0ix</text>
+<circle cx="507" cy="329" r="4" fill="#b06000"/>
+<text x="519" y="333" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">TPM (Cr50)</text>
+<text x="519" y="349" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">must be cleared first</text>
+<rect x="722" y="74" width="222" height="402" rx="12" fill="#f1f3f4"/>
+<text x="736" y="102" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="14" font-weight="700" fill="#5f6368">Not working / untested (4)</text>
+<circle cx="741" cy="129" r="4" fill="#5f6368"/>
+<text x="753" y="133" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Widevine L1 (DRM)</text>
+<text x="753" y="149" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">not working</text>
+<circle cx="741" cy="169" r="4" fill="#5f6368"/>
+<text x="753" y="173" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">ChromeOS features</text>
+<text x="753" y="189" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">not working</text>
+<circle cx="741" cy="209" r="4" fill="#5f6368"/>
+<text x="753" y="213" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">Screen rotation</text>
+<text x="753" y="229" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">untested</text>
+<circle cx="741" cy="249" r="4" fill="#5f6368"/>
+<text x="753" y="253" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="13" fill="#202124">LTE modem</text>
+<text x="753" y="269" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="11" fill="#5f6368">untested</text>
+<text x="20" y="508" font-family="-apple-system, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif" font-size="12" fill="#5f6368">Grey lines: the kit component involved, or the limitation. * audio setup = chromebook-linux-audio (WeirdTreeThing), done first. Full matrix: docs/hardware-support.md</text>
+</svg>
