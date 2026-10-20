@@ -1,0 +1,33 @@
+name: Release
+
+# Pushing a tag vX.Y.Z runs the tests, builds the tarball the one-line installer downloads, and publishes it with its
+# sha256. The installer pins that sha256 (scripts/release.sh writes it into install.sh before the tag is made).
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+
+  release:
+    needs: ci
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the tarball and check it matches the pin in install.sh
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          scripts/release.sh --build-only "$version"
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=${GITHUB_REF_NAME#v}
+          gh release create "$GITHUB_REF_NAME" "dist/redrix-linux-$version.tar.gz" "dist/redrix-linux-$version.tar.gz.sha256" \
+            --title "redrix-linux $version" --notes-file "dist/notes.md" --verify-tag

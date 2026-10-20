@@ -1,0 +1,6 @@
+# redrix-linux (keychron): lets the user of the active session reach Keychron keyboards from Keychron Launcher
+# (launcher.keychron.com, WebHID/WebUSB in Chrome), to remap keys and update the firmware.
+# 3434 = Keychron (wired keyboards and the Link 2.4 GHz dongles); 0483:df11 = the STM32 bootloader used for updates.
+# Trade-off: any process of the session can also read the keyboard's raw HID reports.
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="3434", TAG+="uaccess"
+SUBSYSTEM=="usb", ATTRS{idVendor}=="0483", ATTRS{idProduct}=="df11", TAG+="uaccess"

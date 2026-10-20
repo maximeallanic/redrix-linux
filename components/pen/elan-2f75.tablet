@@ -1,0 +1,20 @@
+# ELAN touchscreen/pen sensor of the HP Elite Dragonfly Chromebook (Google Redrix).
+# Same ELAN2513 controller as libwacom's elan-2513.tablet, but product 2f75 is not listed there
+# (libwacom 2.20). Without this file GNOME does not know the pen is built into the laptop display:
+# no Tablet panel, and the pen is mapped over the whole desktop once an external monitor is attached.
+# Size from the evdev axes of the Stylus node: X 0..17940 at 63 u/mm, Y 0..11180 at 59 u/mm.
+# The pen itself is described in redrix-pen.stylus (no button, no eraser).
+
+[Device]
+Name=ELAN 2513
+ModelName=
+DeviceMatch=i2c|04f3|2f75
+Class=ISDV4
+Width=285
+Height=189
+IntegratedIn=Display;System
+Styli=@redrix-pen
+
+[Features]
+Stylus=true
+Touch=true

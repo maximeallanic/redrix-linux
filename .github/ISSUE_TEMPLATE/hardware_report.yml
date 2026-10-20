@@ -1,0 +1,28 @@
+name: Hardware report
+description: Tell us a component works (or not) on your Redrix, or that a related board behaves the same
+labels: [hardware]
+body:
+  - type: input
+    id: board
+    attributes:
+      label: Board and firmware
+      description: Output of `cat /sys/class/dmi/id/product_name /sys/class/dmi/id/bios_version`
+    validations:
+      required: true
+  - type: input
+    id: system
+    attributes:
+      label: Distribution, GNOME Shell and kernel versions
+    validations:
+      required: true
+  - type: textarea
+    id: verify
+    attributes:
+      label: Output of ./verify.sh --all
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes

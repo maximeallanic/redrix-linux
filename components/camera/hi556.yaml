@@ -1,0 +1,24 @@
+# SPDX-License-Identifier: CC0-1.0
+# libcamera software ISP tuning for the Hynix hi556 (HP Elite Dragonfly Chromebook, IPU6 + simple pipeline).
+# Installed as /etc/libcamera/ipa/simple/hi556.yaml (looked up before /usr/share/libcamera/ipa).
+# Measured on 2026-10-07, see docs/components/camera.md:
+#  - blackLevel: dark frames with the privacy shutter closed, 64.0-64.2 on all four Bayer channels
+#    at 10 bits = 4096 on the 16-bit scale libcamera expects.
+#  - ccm: fitted on a ColorChecker shown on a Pixel screen (sRGB, ~D65), rows sum to 1 so neutrals
+#    stay neutral; mean dE 18.8 -> 6.8 on the fitted patches, two captures agree within 0.05.
+%YAML 1.1
+---
+version: 1
+algorithms:
+  - BlackLevel:
+      blackLevel: 4096
+  - Awb:
+  - Ccm:
+      ccms:
+        - ct: 6500
+          ccm: [  1.920, -0.751, -0.170,
+                 -0.315,  1.693, -0.377,
+                 -0.181, -0.245,  1.426 ]
+  - Adjust:
+  - Agc:
+...

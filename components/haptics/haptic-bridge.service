@@ -1,0 +1,14 @@
+[Unit]
+Description=Vibrate the Logitech mouse and the haptic touchpad on GNOME events (haptic-bridge, redrix-linux)
+Documentation=https://github.com/maximeallanic/redrix-linux/blob/main/docs/components/haptics.md
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/haptic-bridge
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Question or idea
+    url: https://github.com/maximeallanic/redrix-linux/discussions
+    about: Ask for help or propose something in a Discussion before opening an issue.
+  - name: Security vulnerability
+    url: https://github.com/maximeallanic/redrix-linux/security/advisories/new
+    about: Please report security issues privately (see SECURITY.md).
+  - name: General Linux-on-Chromebook help
+    url: https://forum.chrultrabook.com/
+    about: Firmware, audio and boot questions not specific to this kit.

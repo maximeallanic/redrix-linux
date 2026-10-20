@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_call:   # reused by the release workflow
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: ShellCheck and tests (Debian testing)
+    runs-on: ubuntu-latest
+    container: debian:testing
+    steps:
+      - name: Install the tools
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends ca-certificates git shellcheck python3 python3-gi python3-tomlkit gjs file
+      - uses: actions/checkout@v4
+      - name: ShellCheck every shell script
+        run: |
+          shellcheck -x install.sh uninstall.sh verify.sh lib/*.sh components/*/*.sh tools/firmware/*.sh \
+            scripts/*.sh tests/run.sh tests/shell/*.sh
+      - name: Files stay under 500 lines
+        run: |
+          long=$(git ls-files | grep -vE '\.(png|bin|rdesc)$' | xargs wc -l | awk '$2 != "total" && $1 > 500')
+          if [ -n "$long" ]; then echo "$long"; exit 1; fi
+      - name: Tests (installer on fake components, component units, Python, GJS)
+        env:
+          CI: "true"
+          HOME: /root
+        run: |
+          mkdir -p "$HOME/.cache"
+          tests/run.sh

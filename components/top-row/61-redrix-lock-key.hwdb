@@ -1,0 +1,5 @@
+# HP Elite Dragonfly Chromebook (Redrix): the lock key at the end of the top row sends scancode 0x5d,
+# which the default atkbd map turns into KEY_SLEEP. The key carries a lock icon and suspend has its own paths
+# (lid, power menu), so it is mapped to KEY_SCREENLOCK (XF86ScreenSaver), which GNOME binds to "lock screen".
+evdev:atkbd:dmi:bvn*:bvr*:bd*:svnGoogle:pnRedrix*:*
+ KEYBOARD_KEY_5d=screenlock

@@ -1,0 +1,8 @@
+{
+  "uuid": "fingerprint-from-clock@maximeallanic.github.io",
+  "name": "Fingerprint from the lock clock",
+  "description": "Starts authentication, fingerprint included, as soon as the lock screen clock is shown: touch the sensor without pressing a key first.",
+  "url": "https://github.com/maximeallanic/redrix-linux",
+  "shell-version": ["50", "51"],
+  "session-modes": ["user", "unlock-dialog"]
+}

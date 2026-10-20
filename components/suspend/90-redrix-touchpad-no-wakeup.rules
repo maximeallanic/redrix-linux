@@ -1,0 +1,3 @@
+# redrix-linux (suspend): the ELAN2703 haptic touchpad fires its interrupt right after S3 entry and wakes the machine
+# at once. It no longer wakes the machine; the lid, the keyboard and the power button still do.
+ACTION=="add|change", SUBSYSTEM=="i2c", KERNEL=="i2c-ELAN2703:00", ATTR{power/wakeup}="disabled"

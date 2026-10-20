@@ -1,0 +1,8 @@
+{
+  "uuid": "fade-to-black@maximeallanic.github.io",
+  "name": "Fade to black on shutdown",
+  "description": "Fades the screen to black when logind announces a shutdown or reboot, so the Plymouth shutdown screen takes over from black instead of cutting from the desktop.",
+  "url": "https://github.com/maximeallanic/redrix-linux",
+  "shell-version": ["50", "51"],
+  "session-modes": ["user", "unlock-dialog"]
+}

@@ -1,0 +1,36 @@
+diff --git a/UefiPayloadPkg/Library/PlatformBootManagerLib/PlatformBootManager.c b/UefiPayloadPkg/Library/PlatformBootManagerLib/PlatformBootManager.c
+index b235733a47..eac490cd83 100644
+--- a/UefiPayloadPkg/Library/PlatformBootManagerLib/PlatformBootManager.c
++++ b/UefiPayloadPkg/Library/PlatformBootManagerLib/PlatformBootManager.c
+@@ -546,15 +546,6 @@ PlatformBootManagerAfterConsole (
+         L"    ENTER            to boot directly.\n"
+         L"\n"
+         );
+-    } else {
+-      BootLogoUpdateProgress (
+-        White,
+-        Black,
+-        L"Press ESC for Boot Options/Settings",
+-        White,
+-        0,
+-        0
+-        );
+     }
+   } else {
+     if (FixedPcdGetBool (PcdSerialTerminalPrintEnabled)) {
+@@ -564,15 +555,6 @@ PlatformBootManagerAfterConsole (
+         L"    ENTER           to boot directly.\n"
+         L"\n"
+         );
+-    } else {
+-      BootLogoUpdateProgress (
+-        White,
+-        Black,
+-        L"Press F2 or Down for Boot Options/Settings",
+-        White,
+-        0,
+-        0
+-        );
+     }
+   }
+ }

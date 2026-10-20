@@ -1,0 +1,28 @@
+# haptic-bridge: GNOME event -> waveform. Installed as ~/.config/haptic-bridge/events.toml; your copy is never
+# overwritten, a new install only adds the events it lacks.
+# Only the pointing device used last vibrates: the mouse (`wave`) or the touchpad (`touchpad`); both are optional.
+# Mouse (Logitech HID++ 0x19B0): SHARP_STATE_CHANGE DAMP_STATE_CHANGE SHARP_COLLISION DAMP_COLLISION
+# SUBTLE_COLLISION HAPPY_ALERT ANGRY_ALERT COMPLETED SQUARE WAVE FIREWORK MAD KNOCK JINGLE RINGING
+# WHISPER_COLLISION (the MX Master 4 does not offer the last one).
+# Touchpad (ELAN2703): SNAP SNAP_REVERSE KNOCK TICK TOGGLE_ON TOGGLE_OFF PRESS RELEASE DEEP_PRESS DEEP_RELEASE.
+# After editing: systemctl --user restart haptic-bridge.service
+force = 50                 # mouse: 0 (off) to 100
+touchpad_force = 50        # touchpad: 0 (off) to 100, scaled to the touchpad's 0-15
+
+[events]
+# To silence ONE event, keep its line and add `force = 0` to it, e.g.
+#     lock = { wave = "COMPLETED", touchpad = "TOGGLE_OFF", cooldown_ms = 500, force = 0 }
+# Do not delete the line: the installer adds every event the file lacks, so a deleted line comes back at the next
+# install. To keep the mouse and silence the touchpad only, remove `touchpad` from the line.
+edge        = { wave = "SHARP_COLLISION",    touchpad = "KNOCK",        cooldown_ms = 150 }
+maximize    = { wave = "DAMP_STATE_CHANGE",  touchpad = "SNAP",         cooldown_ms = 150 }
+unmaximize  = { wave = "SHARP_STATE_CHANGE", touchpad = "SNAP_REVERSE", cooldown_ms = 150 }
+workspace   = { wave = "SHARP_STATE_CHANGE", touchpad = "TICK",         cooldown_ms = 100 }
+overview    = { wave = "DAMP_COLLISION",     touchpad = "TICK",         cooldown_ms = 100 }
+lock        = { wave = "COMPLETED",          touchpad = "TOGGLE_OFF",   cooldown_ms = 500 }
+screenshot  = { wave = "KNOCK",              touchpad = "KNOCK",        cooldown_ms = 500 }
+button      = { wave = "SUBTLE_COLLISION",                              cooldown_ms = 80 }
+volume      = { wave = "SUBTLE_COLLISION",   touchpad = "TICK",         cooldown_ms = 80 }
+volume-stop = { wave = "DAMP_COLLISION",     touchpad = "KNOCK",        cooldown_ms = 80 }
+toggle-on   = { wave = "SHARP_STATE_CHANGE", touchpad = "TOGGLE_ON",    cooldown_ms = 80 }
+toggle-off  = { wave = "DAMP_STATE_CHANGE",  touchpad = "TOGGLE_OFF",   cooldown_ms = 80 }

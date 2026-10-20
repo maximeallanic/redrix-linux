@@ -1,0 +1,8 @@
+[Plymouth Theme]
+Name=redrix-linux shutdown
+Description=Shutdown and reboot screen: the firmware boot logo fades in where the firmware draws it at power-on, then a spinner. Used only by plymouth-{poweroff,reboot,halt,kexec} through a bind-mounted plymouthd.conf, never at boot.
+ModuleName=script
+
+[script]
+ImageDir=/usr/share/plymouth/themes/redrix-shutdown
+ScriptFile=/usr/share/plymouth/themes/redrix-shutdown/redrix-shutdown.script

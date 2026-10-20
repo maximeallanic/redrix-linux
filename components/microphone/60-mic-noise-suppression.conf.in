@@ -1,0 +1,43 @@
+# Noise-suppressed internal microphone, written by redrix-linux (component microphone) into
+# ~/.config/pipewire/pipewire.conf.d/. See docs/components/microphone.md.
+# WebRTC audio processing from libspa-aec-webrtc with PipeWire's defaults: noise suppression on (level fixed at high
+# by the plugin), high-pass filter on, automatic gain control off (it pumps the level, and most applications
+# normalise it themselves).
+# No echo reference from a real output: the module's four streams share one node.group, so taking the reference from
+# a sink (monitor.mode, or the playback stream linked to a sink) puts the microphone on that sink's clock. Mic1 is a
+# split node with resample.disable and cannot follow another clock: when tried, the HDMI sink and the microphone both
+# froze. The reference sink below is never linked to a device, so the group stays on the microphone's clock; echo
+# from the speakers is not removed.
+context.modules = [
+    {   name = libpipewire-module-echo-cancel
+        args = {
+            library.name = aec/libspa-aec-webrtc
+            audio.rate = 48000
+            audio.channels = 1
+            audio.position = [ MONO ]
+            capture.props = {
+                node.name = "mic_noise_suppression.capture"
+                # Mic1. Mic2, "Internal Microphone 2", returns a saturated constant on this board.
+                target.object = "@MIC1_NODE@"
+                node.passive = true
+            }
+            source.props = {
+                node.name = "mic_noise_suppression"
+                node.description = "Internal Microphone (noise suppressed)"
+            }
+            # Reference sink: not a device, never chosen as default output, nothing linked to it.
+            sink.props = {
+                node.name = "mic_noise_suppression.reference"
+                node.description = "Noise suppression reference (unused)"
+                priority.session = 0
+                priority.driver = 0
+            }
+            # Its playback stream stays unlinked so no real sink joins the group.
+            playback.props = {
+                node.name = "mic_noise_suppression.reference.playback"
+                node.autoconnect = false
+                node.passive = true
+            }
+        }
+    }
+]

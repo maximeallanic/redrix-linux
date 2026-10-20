@@ -1,0 +1,54 @@
+# Shutdown screen of redrix-linux. GNOME Shell fades to black (fade-to-black extension); this screen starts from black,
+# fades the firmware logo in where the firmware draws it at power-on (edk2 with EDK2_FOLLOW_BGRT_SPEC: centred
+# horizontally, at 38.2 % of the height), then shows Plymouth's spinner below it.
+# logo.png is converted from the ACPI BGRT image at install; throbber-*.png are copied from the spinner theme.
+
+LOGO_CENTRE_Y = 0.382;   # fraction of the screen height
+SPINNER_Y     = 0.82;    # fraction of the screen height, centre of the spinner
+FADE_FRAMES   = 24;      # Plymouth refreshes at 50 Hz: 0.48 s
+SPINNER_FRAMES = 30;
+SPINNER_STEP   = 2;      # refresh ticks per spinner frame
+
+Window.SetBackgroundTopColor(0, 0, 0);
+Window.SetBackgroundBottomColor(0, 0, 0);
+
+logo.image = Image("logo.png");
+logo.sprite = Sprite(logo.image);
+logo.sprite.SetX(Window.GetX() + Window.GetWidth() / 2 - logo.image.GetWidth() / 2);
+logo.sprite.SetY(Window.GetY() + Window.GetHeight() * LOGO_CENTRE_Y - logo.image.GetHeight() / 2);
+logo.sprite.SetOpacity(0);
+
+fun frame_name(index) {
+    n = index + 1;
+    if (n < 10) return "throbber-000" + n + ".png";
+    return "throbber-00" + n + ".png";
+}
+
+for (i = 0; i < SPINNER_FRAMES; i++)
+    spinner.images[i] = Image(frame_name(i));
+spinner.sprite = Sprite();
+spinner.sprite.SetX(Window.GetX() + Window.GetWidth() / 2 - spinner.images[0].GetWidth() / 2);
+spinner.sprite.SetY(Window.GetY() + Window.GetHeight() * SPINNER_Y - spinner.images[0].GetHeight() / 2);
+spinner.sprite.SetImage(spinner.images[0]);
+spinner.sprite.SetOpacity(0);
+
+tick = 0;
+frame = 0;
+sub = 0;
+
+fun refresh_callback() {
+    tick++;
+    opacity = tick / FADE_FRAMES;
+    if (opacity > 1) opacity = 1;
+    logo.sprite.SetOpacity(opacity);
+    spinner.sprite.SetOpacity(opacity);
+    sub++;
+    if (sub >= SPINNER_STEP) {
+        sub = 0;
+        frame++;
+        if (frame >= SPINNER_FRAMES) frame = 0;
+        spinner.sprite.SetImage(spinner.images[frame]);
+    }
+}
+
+Plymouth.SetRefreshFunction(refresh_callback);

@@ -1,0 +1,21 @@
+[Plymouth Theme]
+Name=BGRT
+Name[fr]=BGRT
+Description=Test fixture shaped like the bgrt theme of plymouth-themes
+ModuleName=two-step
+
+[two-step]
+ImageDir=/usr/share/plymouth/themes//spinner
+DialogVerticalAlignment=.382
+TitleVerticalAlignment=.382
+VerticalAlignment=.7
+Transition=none
+TransitionDuration=0.0
+DialogClearsFirmwareBackground=true
+
+[boot-up]
+UseFirmwareBackground=true
+
+[updates]
+Title=Installing Updates...
+VerticalAlignment=.5

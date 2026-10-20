@@ -1,0 +1,393 @@
+#!/usr/bin/env python3
+"""haptic-bridge: vibrates the Logitech mouse (HID++ 0x19B0) and the haptic touchpad on GNOME events.
+
+User service: publishes io.github.maximeallanic.Haptic on the session bus (Play, PlayOn, SetActive, Ping).
+CLI: `haptic-bridge play <event> [mouse|touchpad]`, `haptic-bridge --ping`, `haptic-bridge --list`,
+`haptic-bridge --touchpad`. See docs/components/haptics.md.
+"""
+import os
+import sys
+import time
+import tomllib
+from pathlib import Path
+
+# haptic_touchpad.py sits next to the script in the kit, in ~/.local/lib/haptic-bridge once installed.
+_HERE = Path(__file__).resolve().parent
+sys.path[:0] = [str(_HERE), str(_HERE.parent / 'lib' / 'haptic-bridge')]
+import haptic_touchpad  # noqa: E402
+
+SOLAAR_LIB = '/usr/share/solaar/lib'
+BUS_NAME = 'io.github.maximeallanic.Haptic'
+OBJ_PATH = '/io/github/maximeallanic/Haptic'
+IFACE = 'io.github.maximeallanic.Haptic'
+
+FEATURE_HAPTIC = 0x19B0
+FN_CAPS, FN_LEVEL_GET, FN_LEVEL_SET, FN_PLAY = 0x00, 0x10, 0x20, 0x40
+# HID++ waveforms (Solaar's HapticWaveForms). The mouse announces the ones it can play (bit mask, fn 0x00).
+WAVEFORMS = {
+    'SHARP_STATE_CHANGE': 0x00, 'DAMP_STATE_CHANGE': 0x01, 'SHARP_COLLISION': 0x02, 'DAMP_COLLISION': 0x03,
+    'SUBTLE_COLLISION': 0x04, 'HAPPY_ALERT': 0x05, 'ANGRY_ALERT': 0x06, 'COMPLETED': 0x07, 'SQUARE': 0x08,
+    'WAVE': 0x09, 'FIREWORK': 0x0A, 'MAD': 0x0B, 'KNOCK': 0x0C, 'JINGLE': 0x0D, 'RINGING': 0x0E,
+    'WHISPER_COLLISION': 0x1B,
+}
+COOLDOWN_DEFAULT_MS = 150
+FORCE_DEFAULT = 50
+TARGETS = ('mouse', 'touchpad')
+CLI_TIMEOUT_MS = 10000  # covers the mouse enumeration a freshly started daemon is still doing
+RETRY_S = 10  # mouse absent: no re-enumeration (1.4 s, file descriptors) more often than this
+
+
+def warn(msg):
+    print(f'haptic-bridge: {msg}', file=sys.stderr, flush=True)
+
+
+def normalize(name):
+    return str(name).strip().upper().replace(' ', '_').replace('-', '_')
+
+
+def config_path():
+    return Path(os.environ.get('XDG_CONFIG_HOME') or Path.home() / '.config') / 'haptic-bridge' / 'events.toml'
+
+
+class Config:
+    def __init__(self, force, events, touchpad=None, touchpad_force=None, muted=None):
+        self.force = force
+        self.events = events  # name -> (normalized mouse waveform or None, cooldown ms): every known event
+        self.touchpad = touchpad or {}  # event name -> touchpad waveform name (haptic_touchpad.WAVEFORMS)
+        self.touchpad_force = force if touchpad_force is None else touchpad_force
+        # Events silenced by the user (`force = 0` on their line): known, never played on any device. The line stays
+        # in the file, so the installer's merge does not bring the vibration back.
+        self.muted = muted or set()
+
+    @staticmethod
+    def _integer(value, default, what):
+        try:
+            return int(value)
+        except (TypeError, ValueError):
+            warn(f'{what}: "{value}" is not an integer, using {default}')
+            return default
+
+    @classmethod
+    def parse(cls, text):
+        """Lenient: a bad value is reported and replaced, never fatal (the daemon must start)."""
+        data = tomllib.loads(text)
+        force = max(0, min(100, cls._integer(data.get('force', FORCE_DEFAULT), FORCE_DEFAULT, 'force')))
+        touchpad_force = max(0, min(100, cls._integer(data.get('touchpad_force', force), force, 'touchpad_force')))
+        events, touchpad, muted = {}, {}, set()
+        for name, spec in (data.get('events') or {}).items():
+            if isinstance(spec, dict) and 'force' in spec:
+                if cls._integer(spec['force'], None, f'force of "{name}"') == 0:
+                    muted.add(name)
+                else:
+                    warn(f'event "{name}": only force = 0 (muted) is supported on one event; '
+                         'the strength is set for a device (force, touchpad_force)')
+            # The mouse and touchpad waveforms are independent: a missing or unknown mouse waveform only silences
+            # the mouse for this event, the touchpad side is read all the same.
+            raw = spec.get('wave') if isinstance(spec, dict) else spec
+            wave = None if raw is None else normalize(raw)
+            if wave is not None and wave not in WAVEFORMS:
+                warn(f'event "{name}": unknown mouse waveform "{raw}", the mouse will stay silent for it')
+                wave = None
+            cooldown = spec.get('cooldown_ms', COOLDOWN_DEFAULT_MS) if isinstance(spec, dict) else COOLDOWN_DEFAULT_MS
+            events[name] = (wave, cls._integer(cooldown, COOLDOWN_DEFAULT_MS, f'cooldown_ms of "{name}"'))
+            tp_raw = spec.get('touchpad') if isinstance(spec, dict) else None
+            if tp_raw is None:
+                continue
+            if normalize(tp_raw) in haptic_touchpad.WAVEFORMS:
+                touchpad[name] = normalize(tp_raw)
+            else:
+                warn(f'event "{name}": unknown touchpad waveform "{tp_raw}", touchpad will stay silent for it')
+        return cls(force, events, touchpad, touchpad_force, muted)
+
+    @classmethod
+    def load(cls, path=None):
+        """Missing file or broken TOML: empty configuration (Ping answers, no event), with a warning."""
+        path = Path(path) if path else config_path()
+        try:
+            return cls.parse(path.read_text())
+        except (OSError, tomllib.TOMLDecodeError) as e:
+            warn(f'{path} unreadable ({e}): no event configured')
+            return cls(FORCE_DEFAULT, {})
+
+
+class Bridge:
+    """Sends the waveforms; reconnects on its own when the mouse has gone away.
+
+    The event goes to the active pointing device (the last one the user moved, reported by the Shell
+    extension through SetActive), never to both: the mouse by default, the touchpad once it is active.
+    """
+
+    def __init__(self, config, finder, clock=time.monotonic, touchpad_finder=lambda: None):
+        self.config = config
+        self.finder = finder
+        self.clock = clock
+        self.touchpad_finder = touchpad_finder
+        self.touchpad = None
+        self.active = 'mouse'
+        self._warned_touchpad = set()
+        self.device = None
+        self.supported = set()
+        self._last = {}
+        self._last_search = float('-inf')
+        self._warned_missing = False
+        self._warned_unknown = set()
+        self._warned_unsupported = set()  # (event, mouse waveform): told once, not at every reconnection
+
+    @staticmethod
+    def _alive(dev):
+        """Solaar swallows the receiver's disappearance (returns None): check the file descriptor ourselves."""
+        r = getattr(dev, 'receiver', None)
+        if r is None:
+            return True
+        try:
+            if r.handle is None or not os.path.exists(r.path):
+                return False
+            os.fstat(int(r.handle))
+            return True
+        except (OSError, TypeError, ValueError):
+            return False
+
+    def _drop(self):
+        """Forgets the current mouse and closes its receiver (otherwise the hidraw descriptor leaks)."""
+        dev, self.device = self.device, None
+        r = getattr(dev, 'receiver', None)
+        if r is not None:
+            try:
+                r.close()
+            except Exception:
+                pass
+
+    def connect(self, set_force=True):
+        now = self.clock()
+        if now - self._last_search < RETRY_S:
+            return False
+        self._last_search = now
+        self._drop()
+        dev = self.finder()
+        caps = dev.feature_request(FEATURE_HAPTIC, FN_CAPS) if dev is not None else None
+        if caps is None:
+            if not self._warned_missing:
+                warn('haptic mouse not found or not answering, events are dropped until it comes back')
+                self._warned_missing = True
+            return False
+        mask = int.from_bytes(caps[4:8], 'big')
+        self.supported = {name for name, i in WAVEFORMS.items() if mask & (1 << i)}
+        # The event stays known (the touchpad may still play it, another mouse may offer the waveform): play() checks
+        # the connected mouse's capabilities on each send.
+        for name, (wave, _) in self.config.events.items():
+            if wave is not None and wave not in self.supported and (name, wave) not in self._warned_unsupported:
+                self._warned_unsupported.add((name, wave))
+                warn(f'event "{name}": this mouse does not offer waveform {wave}, the mouse will stay silent for it')
+        if set_force:
+            level = b'\x00\x32' if self.config.force == 0 else b'\x01' + bytes([self.config.force])
+            try:
+                dev.feature_request(FEATURE_HAPTIC, FN_LEVEL_SET, level)
+            except Exception as e:
+                warn(f'haptic force not applied: {e}')
+        self.device = dev
+        self._last_search = float('-inf')  # mouse found: the next loss is looked up without delay
+        if self._warned_missing:
+            warn('haptic mouse found again')
+            self._warned_missing = False
+        return True
+
+    def present(self):
+        return (self.device is not None and self._alive(self.device)) or self.connect()
+
+    def set_active(self, target):
+        if target in TARGETS:
+            self.active = target
+
+    def play(self, event, target=None):
+        if event in self.config.muted:
+            return False
+        if event not in self.config.events:
+            if event not in self._warned_unknown:
+                warn(f'unknown event: "{event}"')
+                self._warned_unknown.add(event)
+            return False
+        wave, cooldown = self.config.events[event]
+        now = self.clock()
+        if now - self._last.get(event, float('-inf')) < cooldown / 1000:
+            return False
+        self._last[event] = now
+        if (target if target in TARGETS else self.active) == 'touchpad':
+            return self._play_touchpad(event)
+        if wave is None:
+            return False
+        if (self.device is None or not self._alive(self.device)) and not self.connect():
+            return False
+        for attempt in (1, 2):
+            if wave not in self.supported:  # re-checked after a reconnect: the new mouse may differ
+                return False
+            try:
+                self.device.feature_request(FEATURE_HAPTIC, FN_PLAY, WAVEFORMS[wave], no_reply=True)
+                if self._alive(self.device):
+                    return True
+                raise OSError('receiver vanished while sending')
+            except Exception as e:
+                if attempt == 2 or not self.connect():
+                    warn(f'sending "{event}" failed: {e}')
+                    return False
+        return False
+
+    def _warn_touchpad_once(self, key, msg):
+        if key not in self._warned_touchpad:
+            warn(msg)
+            self._warned_touchpad.add(key)
+
+    def _play_touchpad(self, event):
+        name = self.config.touchpad.get(event)
+        if name is None:
+            return False
+        if self.touchpad is None:
+            self.touchpad = self.touchpad_finder()
+            if self.touchpad is None:
+                self._warn_touchpad_once('absent', 'no haptic touchpad found, touchpad events are dropped')
+                return False
+            self._warned_touchpad.discard('absent')
+        try:
+            self.touchpad.play(name, self.config.touchpad_force)
+            return True
+        except KeyError:
+            self._warn_touchpad_once(name, f'event "{event}": the touchpad does not offer waveform {name}')
+        except OSError as e:
+            # The hidraw node vanished (rebind, resume): forget it, the next event looks it up again.
+            warn(f'touchpad: sending "{event}" failed: {e}')
+            self.touchpad.close()
+            self.touchpad = None
+        return False
+
+
+# --- discovery through the Solaar library --------------------------------------
+
+def find_device():
+    """First Logitech device (behind a Bolt/Unifying receiver) exposing the haptic feature."""
+    if SOLAAR_LIB not in sys.path:
+        sys.path.insert(0, SOLAAR_LIB)
+    import logging
+    logging.getLogger('logitech_receiver').setLevel(logging.CRITICAL)  # Bolt: noisy "looked for device 1"
+    from logitech_receiver import base, receiver
+    from logitech_receiver.hidpp20_constants import SupportedFeature as F
+    for info in base.receivers_and_devices():
+        if info.isDevice:
+            continue
+        try:
+            r = receiver.create_receiver(base, info)
+        except Exception as e:
+            warn(f'receiver {info.path} skipped: {e}')
+            continue
+        if r is None:
+            continue
+        for dev in r:
+            try:
+                if dev.online and F.HAPTIC in dev.features:
+                    return dev
+            except Exception:
+                continue
+        r.close()  # receiver without a haptic mouse: do not keep its descriptor
+    return None
+
+
+# --- D-Bus ----------------------------------------------------------------------
+
+NODE_XML = f"""<node>
+  <interface name="{IFACE}">
+    <method name="Play"><arg type="s" name="event" direction="in"/></method>
+    <method name="PlayOn">
+      <arg type="s" name="target" direction="in"/><arg type="s" name="event" direction="in"/>
+      <arg type="b" name="played" direction="out"/>
+    </method>
+    <method name="SetActive"><arg type="s" name="target" direction="in"/></method>
+    <method name="Ping"><arg type="b" name="present" direction="out"/></method>
+  </interface>
+</node>"""
+
+
+def serve(bridge):
+    import gi
+    gi.require_version('Gio', '2.0')
+    from gi.repository import Gio, GLib
+    info = Gio.DBusNodeInfo.new_for_xml(NODE_XML)
+
+    def on_call(_conn, _sender, _path, _iface, method, params, invocation):
+        if method == 'Play':
+            bridge.play(params.unpack()[0])
+            invocation.return_value(None)
+        elif method == 'PlayOn':
+            target, event = params.unpack()
+            invocation.return_value(GLib.Variant('(b)', (bridge.play(event, target=target),)))
+        elif method == 'SetActive':
+            bridge.set_active(params.unpack()[0])
+            invocation.return_value(None)
+        elif method == 'Ping':
+            invocation.return_value(GLib.Variant('(b)', (bridge.present(),)))
+        else:
+            invocation.return_dbus_error('org.freedesktop.DBus.Error.UnknownMethod', method)
+
+    def on_bus(conn, _name):
+        conn.register_object(OBJ_PATH, info.interfaces[0], on_call, None, None)
+
+    def on_lost(_conn, _name):
+        warn('D-Bus name lost, exiting')
+        sys.exit(1)
+
+    def first_connect():
+        # Mouse enumeration takes seconds: run it from the loop so the bus name is published first;
+        # calls arriving meanwhile are queued and served right after.
+        bridge.connect()
+        print(f'haptic-bridge: ready, {len(bridge.config.events)} event(s), mouse {"present" if bridge.device else "absent"}', flush=True)
+        return GLib.SOURCE_REMOVE
+
+    Gio.bus_own_name(Gio.BusType.SESSION, BUS_NAME, Gio.BusNameOwnerFlags.NONE, on_bus, None, on_lost)
+    GLib.idle_add(first_connect)
+    GLib.MainLoop().run()
+
+
+def call(method, *args):
+    import gi
+    gi.require_version('Gio', '2.0')
+    from gi.repository import Gio, GLib
+    bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+    signature = '(' + 's' * len(args) + ')'
+    return bus.call_sync(BUS_NAME, OBJ_PATH, IFACE, method, GLib.Variant(signature, args) if args else None,
+                         None, Gio.DBusCallFlags.NONE, CLI_TIMEOUT_MS, None)
+
+
+def main(argv):
+    if not argv:
+        serve(Bridge(Config.load(), find_device, touchpad_finder=haptic_touchpad.find_touchpad))
+        return 0
+    if argv[0] == 'play' and len(argv) == 2:
+        call('Play', argv[1])
+        return 0
+    if argv[0] == 'play' and len(argv) == 3 and argv[2] in TARGETS:
+        if call('PlayOn', argv[2], argv[1]).unpack()[0]:
+            return 0
+        print(f'{argv[1]} not played on {argv[2]} (device absent, event muted, unknown or in cooldown, '
+              'waveform not offered); see journalctl --user -u haptic-bridge', file=sys.stderr)
+        return 1
+    if argv[0] == '--ping':
+        present = call('Ping').unpack()[0]
+        print('mouse present' if present else 'mouse absent')
+        return 0 if present else 1
+    if argv[0] == '--list':
+        bridge = Bridge(Config(FORCE_DEFAULT, {}), find_device)
+        if not bridge.connect(set_force=False):  # read-only: leaves the force set by the service alone
+            return 1
+        print('\n'.join(sorted(bridge.supported)))
+        return 0
+    if argv[0] == '--touchpad':
+        touchpad = haptic_touchpad.find_touchpad()
+        if touchpad is None:
+            print('no haptic touchpad', file=sys.stderr)
+            return 1
+        print(f'# {touchpad.path}')
+        print('\n'.join(sorted(touchpad.names())))
+        return 0
+    print(__doc__, file=sys.stderr)
+    return 2
+
+
+if __name__ == '__main__':
+    sys.exit(main(sys.argv[1:]))

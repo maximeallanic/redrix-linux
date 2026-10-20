@@ -1,0 +1,5 @@
+# redrix-linux (haptics): hidraw access to the ELAN2703 haptic touchpad (HID 0018:04F3:323B, I2C) for the user of
+# the active session, so haptic-bridge can play waveforms on it (Manual Trigger output report).
+# Trade-off: any process of that session can also read the touchpad's raw reports (same compromise as Solaar's
+# Logitech rule and the Keychron rule).
+SUBSYSTEM=="hidraw", KERNELS=="0018:04F3:323B.*", TAG+="uaccess"

@@ -1,0 +1,8 @@
+{
+  "uuid": "pen-dot@maximeallanic.github.io",
+  "name": "Pen Dot",
+  "description": "Shows a small dot under the stylus instead of the mouse arrow.",
+  "url": "https://github.com/maximeallanic/redrix-linux",
+  "shell-version": ["50", "51"],
+  "session-modes": ["user", "unlock-dialog"]
+}

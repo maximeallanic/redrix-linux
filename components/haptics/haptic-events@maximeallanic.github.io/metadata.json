@@ -1,0 +1,8 @@
+{
+  "uuid": "haptic-events@maximeallanic.github.io",
+  "name": "Haptic Events",
+  "description": "Vibrates the haptic touchpad or the Logitech mouse (through haptic-bridge) on desktop events: workspaces, overview, windows, lock, screenshot, volume, quick-settings and menu toggles.",
+  "url": "https://github.com/maximeallanic/redrix-linux",
+  "shell-version": ["50", "51"],
+  "session-modes": ["user", "unlock-dialog"]
+}

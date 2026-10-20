@@ -1,0 +1,12 @@
+# Pen of the HP Elite Dragonfly Chromebook (Google Redrix): a single tip, no barrel button, no eraser
+# (checked on evdev 2026-10-09: only BTN_TOOL_PEN and BTN_TOUCH ever fire; the controller still
+# advertises BTN_TOOL_RUBBER, BTN_STYLUS and BTN_STYLUS2). libwacom's generic styli all declare two
+# buttons, so GNOME would offer mappings for buttons that do not exist. The ID sits just below
+# libwacom's own generic range (0xffffb-0xfffff) and is local to this machine.
+[0x0:0xffff0]
+Name=Redrix Pen
+Group=redrix-pen
+Buttons=0
+Axes=Pressure;
+Type=General
+IsGenericStylus=true
