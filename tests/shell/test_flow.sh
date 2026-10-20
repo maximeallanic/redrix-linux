@@ -173,8 +173,11 @@ test_other_hardware_is_refused() {
 
 test_piped_bootstrap_refuses_without_a_pinned_release() {
     local out
-    # --force gets past the board check on any host, so the pin check is what stops it, before any download.
-    out=$(bash -s -- --force <"$ROOT/install.sh" 2>&1) && t_fail "bootstrap succeeded"
+    # The pin is emptied here, as scripts/release.sh does when it builds the tarball: the test does not depend on
+    # whether the checkout is a release commit. --force gets past the board check on any host, so the pin check is
+    # what stops it, before any download.
+    out=$(sed "s/^RELEASE_SHA256=.*/RELEASE_SHA256=''/" "$ROOT/install.sh" | bash -s -- --force 2>&1) &&
+        t_fail "bootstrap succeeded"
     t_contains "$out" "no release of redrix-linux is pinned"
     [[ $out != *Downloading* ]] || t_fail "downloaded without a pin: $out"
 }
